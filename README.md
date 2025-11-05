@@ -75,7 +75,7 @@ See **Methods block (EN/TH)** in `methods_block_en_th.md` for paste‑ready webs
 ---
 
 ## Contact
-Questions or corrections: **contact@kaizenkode.de** (EN/TH).
+Questions or corrections: **info@appdevbangkok.com* (EN/TH).
 
 ---
 
