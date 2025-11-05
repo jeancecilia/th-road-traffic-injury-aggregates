@@ -21,7 +21,7 @@ Aggregated quarterly and yearly indicators derived from Thailand’s DDC Injury 
 
 ## Data Access
 
-This dataset is available at: [https://bangkokfamilylawyer.com/datasets/injury-th/](https://bangkokfamilylawyer.com/datasets/injury-th/)
+This dataset is available at: [https://bangkokfamilylawyer.com/datasets-injury-th/](https://bangkokfamilylawyer.com/datasets-injury-th/)
 
 ---
 
@@ -86,5 +86,5 @@ Questions or corrections: **contact@kaizenkode.de** (EN/TH).
 
 **สัญญาอนุญาต:** ข้อมูลต้นทางเป็นไปตามเงื่อนไขในเพจของหน่วยงาน  ส่วนการรวบรวม/จัดรูปแบบโดย Kaizen Kode เผยแพร่ภายใต้ **CC BY 4.0**
 
-> **Dataset landing page (EN/TH): https://bangkokfamilylawyer.com/datasets/injury-th/ **  
+> **Dataset landing page (EN/TH): https://bangkokfamilylawyer.com/datasets-injury-th/ **  
 > Methods, CSVs, charts, and version notes live on the website.
