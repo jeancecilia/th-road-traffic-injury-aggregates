@@ -1,0 +1,52 @@
+{ 
+  "input": {
+    "csv_encoding_candidates": ["utf-8-sig", "utf-8", "cp874", "iso-8859-11", "latin-1"],
+    "buddhist_to_gregorian": true,
+    "dayfirst": true
+  },
+  "date": {
+    "primary": "adate",
+    "fallback": "hdate",
+    "output_fields": ["year", "quarter", "month"]
+  },
+  "geo": {
+    "province": "prov",
+    "amphoe": "aampur",
+    "bangkok_name": "กรุงเทพมหานคร"
+  },
+  "demographics": {
+    "sex": "sex",
+    "age": "age",
+    "age_bins": [0, 14, 24, 44, 64, 200],
+    "age_labels": ["0-14", "15-24", "25-44", "45-64", "65+"]
+  },
+  "icd10": {
+    "column": "icdcause"
+  },
+  "risks": {
+    "alcohol": null,
+    "helmet": null,
+    "seatbelt": null,
+    "values_yes": ["1", "y", "yes", "true", "ใช่", "มี", "ใส่", "สวม"],
+    "values_no": ["0", "n", "no", "false", "ไม่", "ไม่มี", "ไม่ใส่", "ไม่สวม"],
+    "values_unknown": ["", "unk", "unknown", "ไม่ทราบ", "na", "null", "-", "."]
+  },
+  "outcomes": {
+    "death_fields": ["diser", "staer", "staward", "er", "er_t"],
+    "death_tokens": ["ตาย", "เสียชีวิต", "dead", "death", "died", "expired", "deceased"]
+  },
+  "population": {
+    "file": "province_population.csv",
+    "prov_col": "prov",
+    "year_col": "year",
+    "pop_col": "population",
+    "enabled": true
+  },
+  "outputs": {
+    "injury_bkk_quarter": "injury_bkk_quarter.csv",
+    "injury_province_year": "injury_province_year.csv",
+    "injury_mode_mix_bkk_year": "injury_mode_mix_bkk_year.csv",
+    "injury_age_sex_bkk_year": "injury_age_sex_bkk_year.csv",
+    "injury_risk_factors_bkk_quarter": "injury_risk_factors_bkk_quarter.csv"
+  }
+}
