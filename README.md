@@ -1,3 +1,7 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17538574.svg)](https://doi.org/10.5281/zenodo.17538574)
+
+> **Canonical dataset page (EN/TH): https://bangkokfamilylawyer.com/datasets-injury-th/**
+
 # Thailand Road‑Traffic Injury Aggregates 2018 (Bangkok & Provinces)
 **Version:** v2025-11 (2018 Data Release)
 
@@ -88,10 +92,30 @@ Optional adjustments inside `aggregate_from_raw.py`:
 
 ---
 
-## Citation (example)
-**EN:** AppDev Bangkok (2025). *Thailand Road‑Traffic Injury Aggregates (Bangkok & Provinces).* Derived from DDC Injury Surveillance. CC BY 4.0.
+## How to Cite
 
-**TH:** AppDev Bangkok (2568). *ตารางข้อมูลสรุปการบาดเจ็บจากอุบัติเหตุทางถนน พ.ศ. 2561 (กรุงเทพฯ และจังหวัดต่าง ๆ).* อ้างอิงจากชุดข้อมูลเฝ้าระวังการบาดเจ็บของกรมควบคุมโรค เผยแพร่ภายใต้ CC BY 4.0
+### Concept (all versions)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17538574.svg)](https://doi.org/10.5281/zenodo.17538574)
+
+### This specific release (v2025-11.1)
+**Plain text citation (EN):**  
+Jean Maurice Cecilia Menzel (2025). Thailand Road-Traffic Injury Aggregates (Bangkok & Provinces) [dataset]. Zenodo. https://doi.org/10.5281/zenodo.17538573 (CC BY 4.0)
+
+**BibTeX:**
+```bibtex
+@dataset{menzel_2025_th_injury_aggregates,
+  author    = {Jean Maurice Cecilia Menzel},
+  title     = {Thailand Road-Traffic Injury Aggregates (Bangkok \& Provinces)},
+  year      = {2025},
+  publisher = {Zenodo},
+  version   = {v2025-11.1},
+  doi       = {10.5281/zenodo.17538573},
+  url       = {https://doi.org/10.5281/zenodo.17538573}
+}
+```
+
+**TH:**  
+AppDev Bangkok (2568). *ตารางข้อมูลสรุปการบาดเจ็บจากอุบัติเหตุทางถนน พ.ศ. 2561 (กรุงเทพฯ และจังหวัดต่าง ๆ).* อ้างอิงจากชุดข้อมูลเฝ้าระวังการบาดเจ็บของกรมควบคุมโรค เผยแพร่ภายใต้ CC BY 4.0
 
 ---
 

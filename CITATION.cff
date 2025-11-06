@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+title: Thailand Road-Traffic Injury Aggregates (Bangkok & Provinces)
+message: If you use this dataset, please cite it.
+doi: 10.5281/zenodo.17538573
+version: v2025-11.1
+authors:
+  - name: Jean Maurice Cecilia Menzel
+    orcid: 
+    email: info@appdevbangkok.com
+    affiliation: AppDev Bangkok
+license: CC-BY-4.0
+keywords: [Thailand, Bangkok, road safety, injury surveillance, dataset, CSV, traffic accidents]
+repository-code: https://github.com/jeancecilia/th-road-traffic-injury-aggregates
+url: https://bangkokfamilylawyer.com/datasets-injury-th/
+date-released: 2025-11-06
