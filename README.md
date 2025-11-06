@@ -1,34 +1,37 @@
-# Thailand Road‑Traffic Injury Aggregates (Bangkok & Provinces)
-**Version:** v2025-11
+# Thailand Road‑Traffic Injury Aggregates 2018 (Bangkok & Provinces)
+**Version:** v2025-11 (2018 Data Release)
 
-Aggregated quarterly and yearly indicators derived directly from Thailand’s DDC Injury Surveillance (IS) raw file (`is2018.csv`, multi‑year contents). This repository provides all‑year rollups built from rows with a valid parsed event date. Only aggregates are published—no person‑level rows.
+Aggregated quarterly and yearly indicators derived from Thailand's DDC Injury Surveillance (IS) raw file for 2018 (`is2018.csv`). This repository provides comprehensive 2018 data rollups built from rows with valid parsed event dates. Only aggregates are published—no person‑level data is included.
 
 ---
 
 ## Files (CSVs)
-- `outputs/national_quarter.csv` — All‑Thailand cases by quarter across all parsed years
-- `outputs/sex_year.csv` — National cases by sex (male/female/unknown) by year
-- `outputs/age_bins_year.csv` — National cases by age group (0–14, 15–24, 25–44, 45–64, 65+) by year
-- `outputs/hour_of_day.csv` — National cases by hour of day (0–23)
-- `outputs/province_year.csv` — Province × year total cases
-- `outputs/bkk_quarter.csv` — Bangkok (กรุงเทพมหานคร) cases by quarter
-- `outputs/bkk_top_amphoe.csv` — Top 20 Bangkok amphoe by cases (if amphoe field available)
-- `outputs/mode_mix_bkk_year.csv` — Bangkok mode mix by year (vehicle type share; may be `Unspecified` if ICD values not in V01–V89 format)
+- `outputs/national_quarter_2018.csv` — All‑Thailand cases by quarter for 2018
+- `outputs/sex_2018.csv` — National cases by sex (male/female/unknown) for 2018
+- `outputs/age_bins_2018.csv` — National cases by age group (0–14, 15–24, 25–44, 45–64, 65+) for 2018
+- `outputs/hour_of_day_2018.csv` — National cases by hour of day (0–23) for 2018
+- `outputs/province_2018.csv` — Province total cases for 2018
+- `outputs/bkk_quarter_2018.csv` — Bangkok (กรุงเทพมหานคร) cases by quarter for 2018
+- `outputs/bkk_top_amphoe_2018.csv` — Top 20 Bangkok districts by cases for 2018
+- `outputs/mode_mix_bkk_2018.csv` — Bangkok mode mix by vehicle type for 2018
+- `outputs/head_injury_2018.csv` — Head injury statistics for 2018
 
-## Files (QA)
-- `outputs/qa_summary.json` — Summary of coverage
+## QA Files
+- `outputs/qa_summary_2018.json` — Summary of 2018 data coverage
   - `total_rows_raw`, `rows_with_parsed_event_date`, `share_parsed`, `year_filter`, `columns_present`
-- `outputs/qa_year_counts.csv` — Parsed rows per year
-- `outputs/qa_coverage_province_year.csv` — For each province‑year: `rows_parsed`, province total `rows_raw`, and `share_parsed_vs_prov_total`
+- `outputs/qa_year_counts_2018.csv` — Row counts by year (showing 2018 focus)
+- `outputs/qa_coverage_province_2018.csv` — Coverage by province: `rows_parsed`, province total `rows_raw`, and `share_parsed_vs_prov_total`
 
 ## Figures (PNGs)
-- `outputs/figures/national_quarter_cases.png`
-- `outputs/figures/sex_national_by_year.png`
-- `outputs/figures/age_bins_by_year.png`
-- `outputs/figures/hour_of_day.png`
-- `outputs/figures/bkk_quarter_cases.png`
-- `outputs/figures/bkk_top_amphoe.png`
-- `outputs/figures/mode_mix_bkk_share_by_year.png` (useful once vehicle mapping is resolved)
+- `outputs/figures/national_quarter_2018.png` — Quarterly national case counts for 2018
+- `outputs/figures/sex_distribution_2018.png` — Gender distribution of cases for 2018
+- `outputs/figures/age_bins_2018.png` — Age group distribution for 2018
+- `outputs/figures/hour_of_day_2018.png` — Hourly distribution of cases for 2018
+- `outputs/figures/bkk_quarter_2018.png` — Bangkok quarterly cases for 2018
+- `outputs/figures/bkk_top_amphoe_2018.png` — Top 20 districts in Bangkok by case count for 2018
+- `outputs/figures/mode_mix_bkk_2018.png` — Vehicle type distribution in Bangkok for 2018
+- `outputs/figures/head_injury_2018.png` — Head injury statistics for 2018
+- `outputs/figures/top10_provinces_2018.png` — Top 10 provinces by case count for 2018
 
 ---
 
@@ -39,9 +42,10 @@ This dataset is available at: [https://bangkokfamilylawyer.com/datasets-injury-t
 
 ## Quick start (What’s inside the CSVs)
 **Common fields**
-- `year`, `quarter` (format `YYYY-Qn`)
+- `year` (2018 for all files)
+- `quarter` (format `2018-Qn` where n=1-4)
 - `prov` (province) in province‑level tables
-- Measures: `cases` (counts). Some tables include shares.
+- Measures: `cases` (counts). Some tables include shares or percentages.
 
 **Vehicle type mapping (ICD‑10 V01–V89, when present)**
 - V01–V09 Pedestrian • V10–V19 Bicycle • V20–V29 Motorcycle • V30–V39 Three‑wheeler • V40–V49 Car  
@@ -87,7 +91,7 @@ Optional adjustments inside `aggregate_from_raw.py`:
 ## Citation (example)
 **EN:** AppDev Bangkok (2025). *Thailand Road‑Traffic Injury Aggregates (Bangkok & Provinces).* Derived from DDC Injury Surveillance. CC BY 4.0.
 
-**TH:** AppDev Bangkok (2568). *ตารางข้อมูลสรุปการบาดเจ็บจากอุบัติเหตุทางถนน (กรุงเทพฯ และจังหวัดต่าง ๆ).* อ้างอิงจากชุดข้อมูลเฝ้าระวังการบาดเจ็บของกรมควบคุมโรค เผยแพร่ภายใต้ CC BY 4.0
+**TH:** AppDev Bangkok (2568). *ตารางข้อมูลสรุปการบาดเจ็บจากอุบัติเหตุทางถนน พ.ศ. 2561 (กรุงเทพฯ และจังหวัดต่าง ๆ).* อ้างอิงจากชุดข้อมูลเฝ้าระวังการบาดเจ็บของกรมควบคุมโรค เผยแพร่ภายใต้ CC BY 4.0
 
 ---
 

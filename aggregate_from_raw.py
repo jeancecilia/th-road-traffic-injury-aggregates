@@ -20,8 +20,8 @@ rcParams["font.family"] = [
 ]
 rcParams["axes.unicode_minus"] = False
 
-# Optional: focus analysis on a single year for cleaner outputs
-YEAR_FILTER = None  # set to a year like 2018 to restrict, or None for all years
+# Focus analysis on 2018 data only
+YEAR_FILTER = 2018  # Set to 2018 to focus on the main year with complete data
 
 # ---------------------- Utilities ----------------------
 
@@ -101,29 +101,37 @@ def icd_vehicle_map(code: Optional[str]) -> str:
 # ---------------------- Aggregations ----------------------
 
 def agg_national_quarter(df: pd.DataFrame) -> pd.DataFrame:
-    out = df.groupby("quarter", dropna=False).size().reset_index(name="cases").sort_values("quarter")
+    # Filter for 2018 data only
+    df_2018 = df[df["year"] == 2018].copy()
+    out = df_2018.groupby("quarter", dropna=False).size().reset_index(name="cases").sort_values("quarter")
     out.to_csv(os.path.join(OUT_DIR, "national_quarter.csv"), index=False)
     plt.figure(figsize=(12, 5))
     plt.bar(out["quarter"], out["cases"], color="#4C78A8")
-    plt.title("National injury cases by quarter")
+    plt.title("National injury cases by quarter (2018)")
     plt.xlabel("Quarter"); plt.ylabel("Cases"); plt.xticks(rotation=45, ha="right"); plt.tight_layout()
     plt.savefig(os.path.join(FIG_DIR, "national_quarter_cases.png")); plt.close()
     return out
 
 
 def agg_sex_year(df: pd.DataFrame) -> pd.DataFrame:
-    sex_norm = normalize_sex(df["sex"]) if "sex" in df.columns else pd.Series(["unknown"] * len(df))
-    tmp = df.assign(sex_norm=sex_norm)
+    # Filter for 2018 data only
+    df_2018 = df[df["year"] == 2018].copy()
+    sex_norm = normalize_sex(df_2018["sex"]) if "sex" in df_2018.columns else pd.Series(["unknown"] * len(df_2018))
+    tmp = df_2018.assign(sex_norm=sex_norm)
     out = (
-        tmp.groupby(["year", "sex_norm"], dropna=False).size().reset_index(name="cases")
-           .pivot(index="year", columns="sex_norm", values="cases").fillna(0).reset_index()
+        tmp.groupby(["sex_norm"], dropna=False).size().reset_index(name="cases")
     )
+    # Add year column for consistency
+    out["year"] = 2018
+    out = out.rename(columns={"sex_norm": "sex"})
+    out = out[["sex", "year", "cases"]]
     out.to_csv(os.path.join(OUT_DIR, "sex_year.csv"), index=False)
-    cols = [c for c in ["male", "female", "unknown"] if c in out.columns]
+    
+    # Create visualization
     plt.figure(figsize=(10, 5))
-    out.set_index("year")[cols].plot(kind="bar", stacked=True, ax=plt.gca())
-    plt.title("National injury cases by sex and year")
-    plt.xlabel("Year"); plt.ylabel("Cases"); plt.tight_layout()
+    plt.bar(out["sex"], out["cases"], color=["#1f77b4", "#ff7f0e", "#2ca02c"])
+    plt.title("Injury cases by sex (2018)")
+    plt.xlabel("Sex"); plt.ylabel("Cases"); plt.tight_layout()
     plt.savefig(os.path.join(FIG_DIR, "sex_national_by_year.png")); plt.close()
     return out
 
@@ -135,8 +143,13 @@ def agg_province_year(df: pd.DataFrame) -> Optional[pd.DataFrame]:
             prov_col = cand; break
     if prov_col is None:
         return None
-    out = df.groupby([prov_col, "year"], dropna=False).size().reset_index(name="cases")
+    # Filter for 2018 data only
+    df_2018 = df[df["year"] == 2018].copy()
+    out = df_2018.groupby(prov_col, dropna=False).size().reset_index(name="cases")
     out = out.rename(columns={prov_col: "prov"})
+    # Add year column for consistency
+    out["year"] = 2018
+    out = out[["prov", "year", "cases"]]
     out.to_csv(os.path.join(OUT_DIR, "province_year.csv"), index=False)
     return out
 
@@ -146,12 +159,16 @@ def agg_bkk_quarter(df: pd.DataFrame) -> Optional[pd.DataFrame]:
     if prov_col is None:
         return None
     bkk_name = "กรุงเทพมหานคร"
-    bkk = df.loc[df[prov_col].astype(str) == bkk_name]
+    # Filter for 2018 data only
+    df_2018 = df[df["year"] == 2018].copy()
+    bkk = df_2018.loc[df_2018[prov_col].astype(str) == bkk_name]
     out = bkk.groupby(["quarter"], dropna=False).size().reset_index(name="cases").sort_values("quarter")
+    # Filter to only include 2018 quarters
+    out = out[out["quarter"].str.startswith("2018")]
     out.to_csv(os.path.join(OUT_DIR, "bkk_quarter.csv"), index=False)
     plt.figure(figsize=(10, 4))
     plt.plot(out["quarter"], out["cases"], marker="o")
-    plt.title("Bangkok (กรุงเทพมหานคร) cases by quarter")
+    plt.title(f"Bangkok (กรุงเทพมหานคร) cases by quarter (2018)")
     plt.xlabel("Quarter"); plt.ylabel("Cases"); plt.xticks(rotation=45, ha="right"); plt.tight_layout()
     plt.savefig(os.path.join(FIG_DIR, "bkk_quarter_cases.png")); plt.close()
     return out
@@ -168,119 +185,268 @@ def agg_mode_mix_bkk_year(df: pd.DataFrame) -> Optional[pd.DataFrame]:
             icd_col = cands[0]
     if icd_col is None:
         return None
-    bkk = df.loc[df["prov"].astype(str) == "กรุงเทพมหานคร"].copy()
+    # Filter for 2018 data only and Bangkok
+    df_2018 = df[df["year"] == 2018].copy()
+    bkk = df_2018.loc[df_2018["prov"].astype(str) == "กรุงเทพมหานคร"].copy()
+    if len(bkk) == 0:
+        return None
     bkk["vehicle_type"] = bkk[icd_col].map(icd_vehicle_map)
-    out = bkk.groupby(["year", "vehicle_type"], dropna=False).size().reset_index(name="cases")
-    out["share_of_total"] = out["cases"] / out.groupby("year")["cases"].transform("sum")
+    out = bkk.groupby("vehicle_type", dropna=False).size().reset_index(name="cases")
+    out["share_of_total"] = out["cases"] / out["cases"].sum()
+    # Add year column for consistency
+    out["year"] = 2018
+    out = out[["year", "vehicle_type", "cases", "share_of_total"]]
     out.to_csv(os.path.join(OUT_DIR, "mode_mix_bkk_year.csv"), index=False)
-    # simple plot
-    pivot = out.pivot(index="vehicle_type", columns="year", values="share_of_total").fillna(0)
+    
+    # Plot the distribution
     plt.figure(figsize=(12, 6))
-    pivot.plot(kind="bar", ax=plt.gca())
-    plt.title("Bangkok mode mix share by year")
-    plt.xlabel("Vehicle type"); plt.ylabel("Share of total")
-    plt.tight_layout(); plt.savefig(os.path.join(FIG_DIR, "mode_mix_bkk_share_by_year.png")); plt.close()
+    out_sorted = out.sort_values("share_of_total", ascending=False)
+    plt.bar(out_sorted["vehicle_type"], out_sorted["share_of_total"] * 100, color="#4C78A8")
+    plt.title("Bangkok mode distribution (2018)")
+    plt.xlabel("Vehicle type"); plt.ylabel("Percentage of cases")
+    plt.xticks(rotation=45, ha="right")
+    plt.tight_layout()
+    plt.savefig(os.path.join(FIG_DIR, "mode_mix_bkk_share_by_year.png"))
+    plt.close()
     return out
 
 
 def agg_age_bins_year(df: pd.DataFrame) -> Optional[pd.DataFrame]:
-    """Cases by age bins per year, with stacked bar figure."""
+    """Cases by age bins for 2018, with bar chart figure."""
     if "age" not in df.columns:
         return None
-    age = pd.to_numeric(df["age"], errors="coerce")
+    # Filter for 2018 data only
+    df_2018 = df[df["year"] == 2018].copy()
+    age = pd.to_numeric(df_2018["age"], errors="coerce")
     bins = [0, 14, 24, 44, 64, 200]
     labels = ["0-14", "15-24", "25-44", "45-64", "65+"]
-    tmp = df.assign(age_group=pd.cut(age, bins=bins, labels=labels, right=True, include_lowest=True))
-    out = tmp.groupby(["year", "age_group"], dropna=False, observed=False).size().reset_index(name="cases")
+    tmp = df_2018.assign(age_group=pd.cut(age, bins=bins, labels=labels, right=True, include_lowest=True))
+    out = tmp.groupby("age_group", dropna=False).size().reset_index(name="cases")
+    # Add year column for consistency
+    out["year"] = 2018
+    out = out[["age_group", "year", "cases"]]
     out.to_csv(os.path.join(OUT_DIR, "age_bins_year.csv"), index=False)
-    # plot stacked
-    pivot = out.pivot(index="year", columns="age_group", values="cases").fillna(0)
+    
+    # Plot the distribution
     plt.figure(figsize=(12, 6))
-    pivot.plot(kind="bar", stacked=True, ax=plt.gca())
-    plt.title("Cases by age group and year")
-    plt.xlabel("Year"); plt.ylabel("Cases"); plt.tight_layout()
-    plt.savefig(os.path.join(FIG_DIR, "age_bins_by_year.png")); plt.close()
+    plt.bar(out["age_group"], out["cases"], color="#4C78A8")
+    plt.title("Cases by age group (2018)")
+    plt.xlabel("Age group"); plt.ylabel("Number of cases")
+    plt.tight_layout()
+    plt.savefig(os.path.join(FIG_DIR, "age_bins_by_year.png"))
+    plt.close()
     return out
 
 
 def agg_hour_of_day(df: pd.DataFrame) -> Optional[pd.DataFrame]:
-    """Cases by hour-of-day, using event_date hour with fallback to atime hour."""
+    """Cases by hour-of-day for 2018, using event_date hour with fallback to atime hour."""
     if "event_date" not in df.columns:
         return None
-    hours = df["event_date"].dt.hour
-    if hours.isna().mean() > 0.5 and "atime" in df.columns:
-        atime = pd.to_datetime(df["atime"], errors="coerce", dayfirst=True)
+    # Filter for 2018 data only
+    df_2018 = df[df["year"] == 2018].copy()
+    hours = df_2018["event_date"].dt.hour
+    if hours.isna().mean() > 0.5 and "atime" in df_2018.columns:
+        atime = pd.to_datetime(df_2018["atime"], errors="coerce", dayfirst=True)
         hours = hours.fillna(atime.dt.hour)
     out = hours.value_counts(dropna=False).sort_index().rename_axis("hour").reset_index(name="cases")
     out = out[out["hour"].notna()].copy()
     out["hour"] = out["hour"].astype(int)
+    # Add year column for consistency
+    out["year"] = 2018
+    out = out[["hour", "year", "cases"]]
     out.to_csv(os.path.join(OUT_DIR, "hour_of_day.csv"), index=False)
-    plt.figure(figsize=(10, 4))
+    
+    # Plot the distribution
+    plt.figure(figsize=(12, 5))
     plt.bar(out["hour"], out["cases"], color="#4C78A8")
-    plt.title("Cases by hour of day")
-    plt.xlabel("Hour (0-23)"); plt.ylabel("Cases"); plt.tight_layout()
-    plt.savefig(os.path.join(FIG_DIR, "hour_of_day.png")); plt.close()
+    plt.title("Cases by hour of day (2018)")
+    plt.xlabel("Hour of day (0-23)")
+    plt.ylabel("Number of cases")
+    plt.xticks(range(0, 24))
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    plt.savefig(os.path.join(FIG_DIR, "hour_of_day.png"))
+    plt.close()
     return out
 
 
 def agg_bkk_top_amphoe(df: pd.DataFrame) -> Optional[pd.DataFrame]:
-    """Top 20 Bangkok amphoe by cases with horizontal bar figure."""
+    """Top 20 Bangkok districts by cases for 2018 with horizontal bar figure."""
     if "prov" not in df.columns:
         return None
-    bkk = df.loc[df["prov"].astype(str) == "กรุงเทพมหานคร"].copy()
+    # Filter for 2018 data only and Bangkok
+    df_2018 = df[df["year"] == 2018].copy()
+    bkk = df_2018.loc[df_2018["prov"].astype(str) == "กรุงเทพมหานคร"].copy()
+    if len(bkk) == 0:
+        return None
+    
+    # Try to find the district column
     amph_col = None
-    for cand in ["aampur", "amphoe", "district"]:
+    for cand in ["aampur", "amphoe", "district", "ampur"]:
         if cand in bkk.columns:
-            amph_col = cand; break
+            amph_col = cand
+            break
     if amph_col is None:
         return None
-    out = bkk.groupby(amph_col, dropna=False).size().reset_index(name="cases").sort_values("cases", ascending=False).head(20)
-    out = out.rename(columns={amph_col: "amphoe"})
+    
+    # Clean up district names and count cases
+    bkk["district"] = bkk[amph_col].astype(str).str.strip()
+    out = (
+        bkk.groupby("district", dropna=False)
+        .size()
+        .reset_index(name="cases")
+        .sort_values("cases", ascending=False)
+        .head(20)
+    )
+    
+    # Add year column for consistency
+    out["year"] = 2018
+    out = out[["district", "year", "cases"]]
     out.to_csv(os.path.join(OUT_DIR, "bkk_top_amphoe.csv"), index=False)
-    plt.figure(figsize=(10, 8))
-    plt.barh(out["amphoe"][::-1].astype(str), out["cases"][::-1], color="#4C78A8")
-    plt.title("Bangkok: Top 20 amphoe by cases")
-    plt.xlabel("Cases"); plt.tight_layout()
-    plt.savefig(os.path.join(FIG_DIR, "bkk_top_amphoe.png")); plt.close()
+    
+    # Create the visualization
+    plt.figure(figsize=(12, 8))
+    plt.barh(
+        out["district"][::-1],  # Reverse for descending order
+        out["cases"][::-1],
+        color="#4C78A8",
+        height=0.8
+    )
+    plt.title("Bangkok: Top 20 districts by cases (2018)", pad=20)
+    plt.xlabel("Number of cases", labelpad=10)
+    plt.ylabel("District", labelpad=10)
+    plt.grid(axis="x", linestyle="--", alpha=0.3)
+    
+    # Add value labels on the bars
+    for i, v in enumerate(out["cases"][::-1]):
+        plt.text(v + 5, i, str(v), va="center", fontsize=9)
+    
+    plt.tight_layout()
+    plt.savefig(os.path.join(FIG_DIR, "bkk_top_amphoe.png"), dpi=120, bbox_inches="tight")
+    plt.close()
+    
     return out
 
 
 def agg_head_injury_year(df: pd.DataFrame) -> Optional[pd.DataFrame]:
-    """Head injury share per year with line figure."""
+    """Head injury statistics for 2018 with bar chart."""
     if "Head_Injury" not in df.columns:
         return None
-    hi = df["Head_Injury"].astype(str).str.strip().str.lower()
-    tmp = df.assign(hi_flag=hi.eq("hi"))
-    year_counts = tmp.groupby("year").size().rename("cases")
-    hi_counts = tmp.groupby("year")["hi_flag"].sum().rename("head_injury_cases")
-    out = pd.concat([year_counts, hi_counts], axis=1).reset_index()
-    out["head_injury_share"] = (out["head_injury_cases"] / out["cases"]).round(4)
+    # Filter for 2018 data only
+    df_2018 = df[df["year"] == 2018].copy()
+    if len(df_2018) == 0:
+        return None
+    
+    # Process head injury data
+    hi = df_2018["Head_Injury"].astype(str).str.strip().str.lower()
+    total_cases = len(hi)
+    head_injury_cases = hi.eq("hi").sum()
+    head_injury_share = head_injury_cases / total_cases if total_cases > 0 else 0
+    
+    # Create output dataframe
+    out = pd.DataFrame({
+        "year": [2018],
+        "total_cases": [total_cases],
+        "head_injury_cases": [head_injury_cases],
+        "head_injury_share": [round(head_injury_share, 4)]
+    })
+    
     out.to_csv(os.path.join(OUT_DIR, "head_injury_year.csv"), index=False)
-    plt.figure(figsize=(10, 5))
-    plt.plot(out["year"], out["head_injury_share"], marker="o")
-    plt.title("Head injury share by year")
-    plt.xlabel("Year"); plt.ylabel("Share of cases"); plt.tight_layout()
-    plt.savefig(os.path.join(FIG_DIR, "head_injury_share_by_year.png")); plt.close()
+    
+    # Create visualization
+    plt.figure(figsize=(10, 6))
+    categories = ["All Cases", "Head Injuries"]
+    counts = [total_cases, head_injury_cases]
+    
+    bars = plt.bar(categories, counts, color=["#4C78A8", "#E45756"])
+    
+    # Add value labels on top of bars
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2., height + 1000,
+                f"{height:,}",
+                ha='center', va='bottom')
+    
+    plt.title("Head Injury Cases (2018)", pad=20)
+    plt.ylabel("Number of Cases")
+    plt.ylim(0, max(counts) * 1.15)  # Add some padding at the top
+    plt.grid(axis='y', linestyle='--', alpha=0.3)
+    plt.tight_layout()
+    
+    plt.savefig(os.path.join(FIG_DIR, "head_injury_share_by_year.png"), dpi=120)
+    plt.close()
+    
     return out
 
 
 def agg_top10_provinces_latest_year(df: pd.DataFrame) -> Optional[pd.DataFrame]:
-    """Top 10 provinces by cases in the latest parsed year, with barh figure."""
+    """Top 10 provinces by cases in 2018, with horizontal bar figure."""
     if "prov" not in df.columns:
         return None
-    prov_year = df.groupby(["prov", "year"], dropna=False).size().reset_index(name="cases")
-    if prov_year.empty:
+    
+    # Filter for 2018 data only
+    df_2018 = df[df["year"] == 2018].copy()
+    if len(df_2018) == 0:
         return None
-    latest_year = int(prov_year["year"].max())
-    latest = prov_year[prov_year["year"] == latest_year].copy().sort_values("cases", ascending=False).head(10)
-    latest.to_csv(os.path.join(OUT_DIR, "top10_provinces_latest_year.csv"), index=False)
-    # figure
-    plt.figure(figsize=(10, 6))
-    plt.barh(latest["prov"][::-1].astype(str), latest["cases"][::-1], color="#4C78A8")
-    plt.title(f"Top 10 provinces by cases in {latest_year}")
-    plt.xlabel("Cases"); plt.tight_layout()
-    plt.savefig(os.path.join(FIG_DIR, "top10_provinces_latest_year.png")); plt.close()
-    return latest
+    
+    # Get top 10 provinces by case count
+    prov_cases = (
+        df_2018.groupby("prov", dropna=False)
+        .size()
+        .reset_index(name="cases")
+        .sort_values("cases", ascending=False)
+        .head(10)
+    )
+    
+    # Add year column for consistency
+    prov_cases["year"] = 2018
+    prov_cases = prov_cases[["prov", "year", "cases"]]
+    
+    # Save to CSV
+    prov_cases.to_csv(os.path.join(OUT_DIR, "top10_provinces_latest_year.csv"), index=False)
+    
+    # Create visualization
+    plt.figure(figsize=(12, 7))
+    
+    # Sort values in descending order for plotting
+    prov_cases = prov_cases.sort_values("cases", ascending=True)
+    
+    # Create horizontal bar plot
+    bars = plt.barh(
+        prov_cases["prov"],
+        prov_cases["cases"],
+        color="#4C78A8",
+        height=0.7
+    )
+    
+    # Add value labels on the bars
+    for bar in bars:
+        width = bar.get_width()
+        plt.text(
+            width + (0.01 * prov_cases["cases"].max()),  # Position text just outside the bar
+            bar.get_y() + bar.get_height() / 2,  # Center text vertically
+            f"{int(width):,}",  # Format number with thousands separator
+            va="center",
+            fontsize=10
+        )
+    
+    plt.title("Top 10 Provinces by Road Traffic Injury Cases (2018)", pad=20)
+    plt.xlabel("Number of Cases", labelpad=10)
+    plt.ylabel("Province", labelpad=10)
+    plt.grid(axis="x", linestyle="--", alpha=0.3)
+    
+    # Adjust layout to prevent cutoff of labels
+    plt.tight_layout()
+    
+    # Save the figure with high DPI for better quality
+    plt.savefig(
+        os.path.join(FIG_DIR, "top10_provinces_latest_year.png"),
+        dpi=120,
+        bbox_inches="tight"
+    )
+    plt.close()
+    
+    return prov_cases
 
 
 def qa_parsed_coverage_by_province_year(raw_df: pd.DataFrame, parsed_df: pd.DataFrame) -> None:
@@ -315,10 +481,9 @@ def main():
     df = parse_dates(raw)
     print(f"Rows with valid event_date: {len(df):,}")
 
-    # Optional focus year
-    if YEAR_FILTER is not None:
-        df = df.loc[df["year"] == YEAR_FILTER].copy()
-        print(f"Applying year filter = {YEAR_FILTER}: rows = {len(df):,}")
+    # Apply 2018 year filter
+    df = df.loc[df["year"] == YEAR_FILTER].copy()
+    print(f"Filtering to year {YEAR_FILTER} only: {len(df):,} rows")
 
     print("Building aggregations...")
     agg_national_quarter(df)

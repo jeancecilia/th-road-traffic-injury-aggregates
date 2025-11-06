@@ -1,8 +1,8 @@
 {
   "total_rows_raw": 266786,
-  "rows_with_parsed_event_date": 110224,
-  "share_parsed": 0.4132,
-  "year_filter": null,
+  "rows_with_parsed_event_date": 109955,
+  "share_parsed": 0.4121,
+  "year_filter": 2018,
   "columns_present": [
     "prov",
     "sex",
